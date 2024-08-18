@@ -20,12 +20,13 @@ type GitHubService struct {
 }
 
 func NewGithubService(api *github.GitHubAPI, commitRepo repos.CommitRepo,
-	repositoryRepo repos.RepositoryRepo) *GitHubService {
+	repositoryRepo repos.RepositoryRepo, config *config.Config) *GitHubService {
 
 	return &GitHubService{
 		api:            api,
 		commitRepo:     commitRepo,
 		repositoryRepo: repositoryRepo,
+		config:         config,
 	}
 }
 
@@ -37,12 +38,18 @@ func (s *GitHubService) run() {
 		log.Printf("Error fetching tracked repository: %v", err)
 		return
 	}
-	fmt.Printf("********Github repository tracking started for repo %s************",
+
+	if trackedRepo == nil {
+		log.Println("no repository set to track")
+		return
+	}
+	fmt.Printf("********Github repository tracking started for repo %s************\n",
 		trackedRepo.Name)
-	s.fetchAndSaveCommits(ctx, trackedRepo)
+	s.fetchAndSaveCommits(ctx, *trackedRepo)
 }
 
 func (s *GitHubService) StartTracking() {
+	fmt.Println("set interval: ", s.config.FetchInterval)
 	go func() {
 		for {
 			s.run()
@@ -52,7 +59,7 @@ func (s *GitHubService) StartTracking() {
 }
 
 func (s *GitHubService) fetchAndSaveCommits(ctx context.Context, repo models.Repository) {
-	commits, err := s.api.FetchCommits(repo.Owner, repo.Name, repo.StartDate)
+	commits, err := s.api.FetchCommits(repo.Owner, repo.Name, repo.StartDate, repo.EndDate)
 	if err != nil {
 		log.Printf("Error fetching commits for repository %s: %v", repo.Name, err)
 		return

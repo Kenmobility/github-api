@@ -35,6 +35,7 @@ func NewRepositoryController(repositoryRepo repos.RepositoryRepo) *RepositoryCon
 func (r *repositoryController) AddRepository(ctx context.Context, data dtos.AddRepositoryRequestDto) (*models.Repository, error) {
 	repository := &models.Repository{
 		PublicID:        uuid.New().String(),
+		Owner:           data.Owner,
 		Name:            data.Name,
 		Description:     data.Description,
 		URL:             data.URL,

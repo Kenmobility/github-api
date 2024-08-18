@@ -36,9 +36,10 @@ func main() {
 	githubAPI := github.NewGitHubAPI(configVariables)
 
 	// instantiate the GitHubAPI service
-	githubService := services.NewGithubService(githubAPI, *commitRepo, *repositoryRepo)
+	githubService := services.NewGithubService(githubAPI, *commitRepo,
+		*repositoryRepo, configVariables)
 
-	// start GitHub tracking service
+	// start GitHub tracking service asynchronously
 	go githubService.StartTracking()
 
 	// instantiate handler

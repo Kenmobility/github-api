@@ -18,7 +18,7 @@ type RepositoryRepo interface {
 	GetRepositoryByName(ctx context.Context, name string) (models.Repository, error)
 	GetRepositoryByPublicId(ctx context.Context, publicId string) (models.Repository, error)
 	GetAllRepositories(ctx context.Context) ([]models.Repository, error)
-	GetTrackedRepository(ctx context.Context) (models.Repository, error)
+	GetTrackedRepository(ctx context.Context) (*models.Repository, error)
 	SetRepositoryToTrack(ctx context.Context, repository models.Repository) (*models.Repository, error)
 }
 
@@ -70,8 +70,8 @@ func (r *Repository) SetRepositoryToTrack(ctx context.Context, repository models
 	return &repository, err
 }
 
-func (r *Repository) GetTrackedRepository(ctx context.Context) (models.Repository, error) {
+func (r *Repository) GetTrackedRepository(ctx context.Context) (*models.Repository, error) {
 	var repo models.Repository
 	err := r.db.Db.WithContext(ctx).Where("is_tracking = ?", true).First(&repo).Error
-	return repo, err
+	return &repo, err
 }

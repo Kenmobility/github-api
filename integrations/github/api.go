@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/kenmobility/github-api/config"
@@ -36,33 +39,72 @@ func (g *GitHubAPI) getHeaders() map[string]string {
 	}
 }
 
-func (g *GitHubAPI) FetchCommits(owner, repo string, since time.Time) ([]models.Commit, error) {
-	endpoint := fmt.Sprintf("/%s/%s/commits", owner, repo)
+func (g *GitHubAPI) FetchCommits(owner, repo string, since time.Time, until time.Time) ([]models.Commit, error) {
+	var result []dtos.GithubCommitResponse
 
-	response, err := g.client.Get(endpoint, map[string]string{}, g.getHeaders)
-	if err != nil {
-		return nil, err
+	endpoint := fmt.Sprintf("/%s/%s/commits?since=%s&until=%s", owner, repo, since.Format(time.RFC3339), until.Format(time.RFC3339))
+
+	for endpoint != "" {
+		c, nextURL, err := g.fetchCommitsPage(endpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, c...)
+		endpoint = nextURL
 	}
 
-	fmt.Println("response: ", response)
+	return result, nil
+}
+
+func (g *GitHubAPI) fetchCommitsPage(endpoint string) ([]dtos.GithubCommitResponse, string, error) {
+
+	response, err := g.client.Get(endpoint, map[string]string{}, g.getHeaders())
+	if err != nil {
+		log.Println("error fetching commits: ", err)
+		return nil, "", nil
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, "", fmt.Errorf("failed to fetch commits; status code: %v", response.StatusCode)
+	}
+	//fmt.Println("link responses: ", response.Headers["Link"])
 
 	var commitRes []dtos.GithubCommitResponse
 
 	if err := json.Unmarshal([]byte(response.Body), &commitRes); err != nil {
 		fmt.Printf("marshal error, [%v]", err)
-		return nil, errors.New("could not unmarshal commits response")
+		return nil, "", errors.New("could not unmarshal commits response")
 	}
 
-	var result []models.Commit
-	for _, c := range commitRes {
-		result = append(result, models.Commit{
-			CommitID: c.SHA,
-			Message:  c.Commit.Message,
-			Author:   c.Commit.Author.Name,
-			Date:     c.Commit.Author.Date,
-			URL:      c.HtmlURL,
-		})
+	nextURL := g.parseNextURL(response.Headers["Link"])
+
+	return commitRes, nextURL, nil
+
+	//nextURL := api.parseNextURL(resp.Header.Get("Link"))
+
+	//return commits, nextURL, nil
+}
+
+func (api *GitHubAPI) parseNextURL(linkHeader []string) string {
+	if len(linkHeader) == 0 {
+		return ""
 	}
 
-	return result, nil
+	links := strings.Split(linkHeader[0], ",")
+	for _, link := range links {
+		parts := strings.Split(strings.TrimSpace(link), ";")
+		if len(parts) < 2 {
+			continue
+		}
+
+		urlPart := strings.Trim(parts[0], "<>")
+		relPart := strings.TrimSpace(parts[1])
+
+		if relPart == `rel="next"` {
+			return urlPart
+		}
+	}
+
+	return ""
 }

@@ -77,7 +77,7 @@ func makeRequest(req *http.Request) (*http.Response, error) {
 		return resp, err
 	}
 
-	log.Println("url: ", url, ", method: ", req.Method, ", resp time: ", time.Since(start).String())
+	log.Println("-------------url: ", url, ", method: ", req.Method, ", resp time: -------------", time.Since(start).String())
 
 	if 200 <= resp.StatusCode && resp.StatusCode <= 299 {
 		body, err := io.ReadAll(resp.Body)
@@ -104,17 +104,12 @@ func (r *RestClient) Get(path string, args ...any) (*Response, error) {
 		headers = args[1].(map[string]string)
 	}
 
-	fmt.Println("query params: ", queryParams)
-	fmt.Println("headers: ", headers)
-
 	request := Request{
 		Method:      Get,
 		BaseURL:     r.BaseURL + path,
 		Headers:     headers,
 		QueryParams: queryParams,
 	}
-	fmt.Printf("request: %+v", request)
-
 	req, err := BuildRequestObject(request)
 	if err != nil {
 		return nil, err
