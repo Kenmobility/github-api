@@ -5,6 +5,7 @@ import "time"
 type Repository struct {
 	ID              uint   `gorm:"primarykey"`
 	PublicID        string `gorm:"uniqueIndex"`
+	Owner           string
 	Name            string `gorm:"unique"`
 	Description     string
 	URL             string

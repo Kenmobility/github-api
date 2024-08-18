@@ -46,7 +46,7 @@ func (g *GitHubAPI) FetchCommits(owner, repo string, since time.Time) ([]models.
 
 	fmt.Println("response: ", response)
 
-	var commitRes []dtos.CommitResponse
+	var commitRes []dtos.GithubCommitResponse
 
 	if err := json.Unmarshal([]byte(response.Body), &commitRes); err != nil {
 		fmt.Printf("marshal error, [%v]", err)

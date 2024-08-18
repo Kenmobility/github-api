@@ -1,9 +1,13 @@
 package dtos
 
-import "time"
+import (
+	"time"
+
+	"github.com/kenmobility/github-api/src/api/models"
+)
 
 type (
-	CommitResponse struct {
+	GithubCommitResponse struct {
 		SHA     string `json:"sha"`
 		NodeId  string `json:"node_id"`
 		Commit  Commit `json:"commit"`
@@ -23,3 +27,8 @@ type (
 		Date  time.Time `json:"date"`
 	}
 )
+
+type AllCommitsResponse struct {
+	Commits  []models.Commit   `json:"commits"`
+	PageInfo models.PagingInfo `json:"page_info"`
+}

@@ -1,6 +1,7 @@
 package dtos
 
-type CreateRepositoryRequestDto struct {
+type AddRepositoryRequestDto struct {
+	Owner           string `json:"owner" validate:"required"`
 	Name            string `json:"name" validate:"required"`
 	Description     string `json:"description"`
 	URL             string `json:"url" validate:"required"`
@@ -9,4 +10,10 @@ type CreateRepositoryRequestDto struct {
 	StarsCount      int    `json:"stars_count"`
 	OpenIssuesCount int    `json:"openIssuesCount"`
 	WatchersCount   int    `json:"watchers_count"`
+}
+
+type TrackRepositoryRequestDto struct {
+	RepoPublicId string `json:"repo_public_id" validate:"required"`
+	StartDate    string `json:"start_date"`
+	EndDate      string `json:"end_date"`
 }
