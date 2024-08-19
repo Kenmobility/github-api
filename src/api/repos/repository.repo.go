@@ -81,5 +81,10 @@ func (r *Repository) SetRepositoryToTrack(ctx context.Context, repository models
 func (r *Repository) GetTrackedRepository(ctx context.Context) (*models.Repository, error) {
 	var repo models.Repository
 	err := r.db.Db.WithContext(ctx).Where("is_tracking = ?", true).First(&repo).Error
+
+	if repo.ID == 0 {
+		return nil, message.ErrNoTrackingRepositorySet
+	}
+
 	return &repo, err
 }

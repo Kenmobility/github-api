@@ -19,13 +19,14 @@ func ConnectDatabase(config config.Config) Database {
 }
 
 // SeedRepository seeds a default chromium repo with tracking as true
-func SeedRepository(c *Database) error {
+func SeedRepository(c *Database, config *config.Config) error {
 	repository := models.Repository{
 		PublicID:   uuid.New().String(),
-		Owner:      "chromium",
-		Name:       "chromium",
+		Name:       "chromium/chromium",
 		URL:        "https://github.com/chromium/chromium",
-		IsTracking: false,
+		IsTracking: true,
+		StartDate:  config.DefaultStartDate,
+		EndDate:    config.DefaultEndDate,
 	}
 
 	err := c.Db.Create(&repository).Error

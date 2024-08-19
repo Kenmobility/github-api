@@ -24,7 +24,8 @@ func main() {
 	// establish database connection
 	database := db.ConnectDatabase(*configVariables)
 
-	SeedData(&database)
+	// seed 'chromium/chromium' repo as default repository to repositories table
+	SeedData(&database, configVariables)
 
 	// instantiate all repositories
 	commitRepo := repos.NewCommitRepo(&database)
@@ -60,8 +61,8 @@ func main() {
 	}
 }
 
-func SeedData(d *db.Database) {
-	if err := db.SeedRepository(d); err != nil {
+func SeedData(d *db.Database, config *config.Config) {
+	if err := db.SeedRepository(d, config); err != nil {
 		fmt.Printf("error seeding repository: %v\n", err)
 	}
 }

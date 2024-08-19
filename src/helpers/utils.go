@@ -1,6 +1,12 @@
 package helpers
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"gopkg.in/go-playground/validator.v9"
+)
 
 // IsLocal returns true or false depending on APP_ENV environmental variable's value
 func IsLocal() bool {
@@ -17,4 +23,27 @@ func Getenv(variable string, defaultValue ...string) string {
 		return ""
 	}
 	return env
+}
+
+func IsRepositoryNameValid(repoName string) bool {
+	return strings.Contains(repoName, "/")
+}
+
+func ValidateInput(input interface{}) []string {
+	var errors []string
+	v := validator.New()
+
+	err := v.Struct(input)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			switch e.ActualTag() {
+			case "required":
+				errors = append(errors, fmt.Sprintf("%s field is required", e.Field()))
+			default:
+				errors = append(errors, "an error occurred")
+			}
+		}
+	}
+
+	return errors
 }

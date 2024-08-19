@@ -47,7 +47,7 @@ func (g *GitHubAPI) getHeaders() map[string]string {
 func (g *GitHubAPI) FetchAndSaveCommits(ctx context.Context, repo models.Repository, since time.Time, until time.Time) ([]models.Commit, error) {
 	var result []models.Commit
 
-	endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/commits?since=%s&until=%s", repo.Owner, repo.Name, since.Format(time.RFC3339), until.Format(time.RFC3339))
+	endpoint := fmt.Sprintf("https://api.github.com/repos/%s/commits?since=%s&until=%s", repo.Name, since.Format(time.RFC3339), until.Format(time.RFC3339))
 	for endpoint != "" {
 		//check if repo is still the tracked repo before calling for next page data
 		trackedRepo, err := g.repositoryRepo.GetTrackedRepository(ctx)

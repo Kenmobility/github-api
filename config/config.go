@@ -11,15 +11,15 @@ import (
 )
 
 type Config struct {
-	AppEnv           string        `validate:"required"`
-	GitHubToken      string        `validate:"required"`
-	DatabaseHost     string        `validate:"required"`
-	DatabasePort     string        `validate:"required"`
-	DatabaseUser     string        `validate:"required"`
-	DatabasePassword string        `validate:"required"`
-	DatabaseName     string        `validate:"required"`
-	FetchInterval    time.Duration `validate:"required"`
-	GitHubApiBaseURL string        `validate:"required"`
+	AppEnv           string
+	GitHubToken      string `validate:"required"`
+	DatabaseHost     string `validate:"required"`
+	DatabasePort     string `validate:"required"`
+	DatabaseUser     string `validate:"required"`
+	DatabasePassword string `validate:"required"`
+	DatabaseName     string `validate:"required"`
+	FetchInterval    time.Duration
+	GitHubApiBaseURL string
 	DefaultStartDate time.Time
 	DefaultEndDate   time.Time
 	Address          string
@@ -35,7 +35,7 @@ func LoadConfig() *Config {
 
 	interval := os.Getenv("FETCH_INTERVAL")
 	if interval == "" {
-		interval = "1hr"
+		interval = "1h"
 	}
 
 	intervalDuration, err := time.ParseDuration(interval)
@@ -48,7 +48,7 @@ func LoadConfig() *Config {
 
 	startDate := os.Getenv("DEFAULT_START_DATE")
 	if startDate == "" {
-		sDate = time.Now().AddDate(0, -5, 0)
+		sDate = time.Now().AddDate(0, -4, 0)
 	} else {
 		sDate, err = time.Parse(time.RFC3339, startDate)
 		if err != nil {

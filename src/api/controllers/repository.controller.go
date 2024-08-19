@@ -11,6 +11,7 @@ import (
 	"github.com/kenmobility/github-api/src/api/models"
 	"github.com/kenmobility/github-api/src/api/repos"
 	"github.com/kenmobility/github-api/src/common/message"
+	"github.com/kenmobility/github-api/src/helpers"
 )
 
 type RepositoryController interface {
@@ -37,9 +38,14 @@ func NewRepositoryController(repositoryRepo repos.RepositoryRepo, config *config
 }
 
 func (r *repositoryController) AddRepository(ctx context.Context, data dtos.AddRepositoryRequestDto) (*models.Repository, error) {
+
+	//validate repository name to ensure it has owner and repo name
+	if !helpers.IsRepositoryNameValid(data.Name) {
+		return nil, message.ErrInvalidRepositoryName
+	}
+
 	repository := &models.Repository{
 		PublicID:        uuid.New().String(),
-		Owner:           data.Owner,
 		Name:            data.Name,
 		Description:     data.Description,
 		URL:             data.URL,

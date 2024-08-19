@@ -5,7 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kenmobility/github-api/src/api/dtos"
+	"github.com/kenmobility/github-api/src/common/message"
 	"github.com/kenmobility/github-api/src/common/response"
+	"github.com/kenmobility/github-api/src/helpers"
 )
 
 func (h *Handler) AddRepository(ctx *gin.Context) {
@@ -14,6 +16,12 @@ func (h *Handler) AddRepository(ctx *gin.Context) {
 	err := ctx.BindJSON(&input)
 	if err != nil {
 		response.Failure(ctx, http.StatusBadRequest, "invalid input", err)
+		return
+	}
+
+	inputErrors := helpers.ValidateInput(input)
+	if inputErrors != nil {
+		response.Failure(ctx, http.StatusBadRequest, message.ErrInvalidInput.Error(), inputErrors)
 		return
 	}
 
@@ -31,7 +39,13 @@ func (h *Handler) TrackRepository(ctx *gin.Context) {
 
 	err := ctx.BindJSON(&input)
 	if err != nil {
-		response.Failure(ctx, http.StatusInternalServerError, err.Error(), err)
+		response.Failure(ctx, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
+	inputErrors := helpers.ValidateInput(input)
+	if inputErrors != nil {
+		response.Failure(ctx, http.StatusBadRequest, message.ErrInvalidInput.Error(), inputErrors)
 		return
 	}
 
