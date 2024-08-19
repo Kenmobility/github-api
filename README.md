@@ -5,10 +5,11 @@ This service fetches data from GitHub's public APIs to retrieve repository commi
 ## Requirements- Golang 1.20+
 - PostgreSQL
 
-## Setup1. Clone the repository:
+## Setup1. Clone the repository and download go dependencies
 ```bash
 git clone https://github.com/kenmobility/github-api.git
 cd github-api
+go mod tidy
 ```
 ## 2. Set up environment variables:
 - use the .env.example format to set up a .env file with environmental variables or run the below
