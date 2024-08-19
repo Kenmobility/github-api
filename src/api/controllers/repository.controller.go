@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -76,7 +76,7 @@ func (r *repositoryController) TrackRepository(ctx context.Context, data dtos.Tr
 	if data.StartDate != "" {
 		startDate, err = time.Parse(time.RFC3339, data.StartDate)
 		if err != nil {
-			log.Fatalf("Invalid start date format: %v", err)
+			return nil, fmt.Errorf("invalid start date format: %v", err)
 		}
 	} else {
 		startDate = r.config.DefaultStartDate
@@ -85,7 +85,7 @@ func (r *repositoryController) TrackRepository(ctx context.Context, data dtos.Tr
 	if data.EndDate != "" {
 		endDate, err = time.Parse(time.RFC3339, data.EndDate)
 		if err != nil {
-			log.Fatalf("Invalid end date format: %v", err)
+			return nil, fmt.Errorf("invalid end date format: %v", err)
 		}
 	} else {
 		endDate = r.config.DefaultEndDate
