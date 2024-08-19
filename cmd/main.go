@@ -32,7 +32,7 @@ func main() {
 	repositoryRepo := repos.NewRepositoryRepo(&database)
 
 	// instantiate all controllers
-	commitController := controllers.NewCommitController(*commitRepo, config.LoadConfig())
+	commitController := controllers.NewCommitController(*commitRepo, configVariables)
 	repositoryController := controllers.NewRepositoryController(*repositoryRepo, configVariables)
 
 	// instantiate the GitHubAPI integration
