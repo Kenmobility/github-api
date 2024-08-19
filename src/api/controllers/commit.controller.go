@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 
+	"github.com/kenmobility/github-api/config"
 	"github.com/kenmobility/github-api/src/api/dtos"
 	"github.com/kenmobility/github-api/src/api/models"
 	"github.com/kenmobility/github-api/src/api/repos"
@@ -15,11 +16,13 @@ type CommitController interface {
 
 type commitController struct {
 	commitRepo repos.CommitRepo
+	config     *config.Config
 }
 
-func NewCommitController(commitRepo repos.CommitRepo) *CommitController {
+func NewCommitController(commitRepo repos.CommitRepo, config *config.Config) *CommitController {
 	commitController := commitController{
 		commitRepo: commitRepo,
+		config:     config,
 	}
 
 	cr := CommitController(&commitController)

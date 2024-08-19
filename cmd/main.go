@@ -24,16 +24,18 @@ func main() {
 	// establish database connection
 	database := db.ConnectDatabase(*configVariables)
 
+	SeedData(&database)
+
 	// instantiate all repositories
 	commitRepo := repos.NewCommitRepo(&database)
 	repositoryRepo := repos.NewRepositoryRepo(&database)
 
 	// instantiate all controllers
-	commitController := controllers.NewCommitController(*commitRepo)
-	repositoryController := controllers.NewRepositoryController(*repositoryRepo)
+	commitController := controllers.NewCommitController(*commitRepo, config.LoadConfig())
+	repositoryController := controllers.NewRepositoryController(*repositoryRepo, configVariables)
 
 	// instantiate the GitHubAPI integration
-	githubAPI := github.NewGitHubAPI(configVariables)
+	githubAPI := github.NewGitHubAPI(configVariables, *commitRepo, *repositoryRepo)
 
 	// instantiate the GitHubAPI service
 	githubService := services.NewGithubService(githubAPI, *commitRepo,
@@ -55,5 +57,11 @@ func main() {
 	//run server
 	if err := server.Run(fmt.Sprintf("%s:%s", configVariables.Address, configVariables.Port)); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s", err)
+	}
+}
+
+func SeedData(d *db.Database) {
+	if err := db.SeedRepository(d); err != nil {
+		fmt.Printf("error seeding repository: %v\n", err)
 	}
 }

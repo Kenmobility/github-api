@@ -21,7 +21,7 @@ type Config struct {
 	FetchInterval    time.Duration `validate:"required"`
 	GitHubApiBaseURL string        `validate:"required"`
 	DefaultStartDate time.Time
-	DefaultEndDate   string
+	DefaultEndDate   time.Time
 	Address          string
 	Port             string
 }
@@ -40,18 +40,29 @@ func LoadConfig() *Config {
 
 	intervalDuration, err := time.ParseDuration(interval)
 	if err != nil {
-		log.Fatalf("Invalid FETCH_INTERVAL :%s env format: %v", interval, err)
+		log.Fatalf("Invalid FETCH_INTERVAL :[%s] env format: %v", interval, err)
 	}
 
 	var sDate time.Time
+	var eDate time.Time
 
 	startDate := os.Getenv("DEFAULT_START_DATE")
 	if startDate == "" {
-		sDate = time.Now().AddDate(0, -1, 0)
+		sDate = time.Now().AddDate(0, -5, 0)
 	} else {
 		sDate, err = time.Parse(time.RFC3339, startDate)
 		if err != nil {
-			log.Fatalf("Invalid DEFAULT_START_DATE %s env format: %v", startDate, err)
+			log.Fatalf("Invalid DEFAULT_START_DATE [%s] env format: %v", startDate, err)
+		}
+	}
+
+	endDate := os.Getenv("DEFAULT_START_DATE")
+	if endDate == "" {
+		eDate = time.Now()
+	} else {
+		eDate, err = time.Parse(time.RFC3339, endDate)
+		if err != nil {
+			log.Fatalf("Invalid DEFAULT_END_DATE [%s] env format: %v", endDate, err)
 		}
 	}
 
@@ -65,7 +76,7 @@ func LoadConfig() *Config {
 		DatabasePassword: os.Getenv("DATABASE_PASSWORD"),
 		FetchInterval:    intervalDuration,
 		DefaultStartDate: sDate,
-		DefaultEndDate:   os.Getenv("DEFAULT_END_DATE"),
+		DefaultEndDate:   eDate,
 		GitHubApiBaseURL: os.Getenv("GITHUB_API_BASE_URL"),
 		Address:          helpers.Getenv("ADDRESS", "127.0.0.1"),
 		Port:             helpers.Getenv("PORT", "5000"),
@@ -75,25 +86,6 @@ func LoadConfig() *Config {
 	err = validate.Struct(configVar)
 	if err != nil {
 		log.Fatalf("env validation error: %s", err.Error())
-	}
-
-	/*
-		if configVar.DefaultStartDate != "" {
-			_, err = time.Parse(time.RFC3339, configVar.DefaultStartDate)
-			if err != nil {
-				log.Fatalf("Invalid DEFAULT_START_DATE format: %v", err)
-			}
-		}
-		else{
-			startDate := time.Now().AddDate(0, -1, 0)
-		}
-	*/
-
-	if configVar.DefaultEndDate != "" {
-		_, err = time.Parse(time.RFC3339, configVar.DefaultEndDate)
-		if err != nil {
-			log.Fatalf("Invalid DEFAULT_START_DATE format: %v", err)
-		}
 	}
 
 	return &configVar

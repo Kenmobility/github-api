@@ -5,6 +5,7 @@ import (
 
 	"github.com/kenmobility/github-api/db"
 	"github.com/kenmobility/github-api/src/api/models"
+	"github.com/kenmobility/github-api/src/common/message"
 )
 
 // Repository struct implements Repository repo interface
@@ -15,8 +16,8 @@ type Repository struct {
 // RepositoryRepo defines RepositoryRepo interface
 type RepositoryRepo interface {
 	SaveRepository(ctx context.Context, repository models.Repository) (*models.Repository, error)
-	GetRepositoryByName(ctx context.Context, name string) (models.Repository, error)
-	GetRepositoryByPublicId(ctx context.Context, publicId string) (models.Repository, error)
+	GetRepositoryByName(ctx context.Context, name string) (*models.Repository, error)
+	GetRepositoryByPublicId(ctx context.Context, publicId string) (*models.Repository, error)
 	GetAllRepositories(ctx context.Context) ([]models.Repository, error)
 	GetTrackedRepository(ctx context.Context) (*models.Repository, error)
 	SetRepositoryToTrack(ctx context.Context, repository models.Repository) (*models.Repository, error)
@@ -38,16 +39,23 @@ func (r *Repository) SaveRepository(ctx context.Context, repository models.Repos
 	return &repository, err
 }
 
-func (r *Repository) GetRepositoryByName(ctx context.Context, name string) (models.Repository, error) {
+func (r *Repository) GetRepositoryByName(ctx context.Context, name string) (*models.Repository, error) {
 	var repo models.Repository
 	err := r.db.Db.WithContext(ctx).Where("name = ?", name).First(&repo).Error
-	return repo, err
+	if repo.ID == 0 {
+		return nil, message.ErrNoRecordFound
+	}
+	return &repo, err
 }
 
-func (r *Repository) GetRepositoryByPublicId(ctx context.Context, publicId string) (models.Repository, error) {
+func (r *Repository) GetRepositoryByPublicId(ctx context.Context, publicId string) (*models.Repository, error) {
 	var repo models.Repository
-	err := r.db.Db.WithContext(ctx).Where("public_id = ?", publicId).First(&repo).Error
-	return repo, err
+	err := r.db.Db.WithContext(ctx).Where("public_id = ?", publicId).Find(&repo).Error
+
+	if repo.ID == 0 {
+		return nil, message.ErrNoRecordFound
+	}
+	return &repo, err
 }
 
 func (r *Repository) GetAllRepositories(ctx context.Context) ([]models.Repository, error) {

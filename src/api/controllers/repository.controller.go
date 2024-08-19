@@ -6,25 +6,29 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kenmobility/github-api/config"
 	"github.com/kenmobility/github-api/src/api/dtos"
 	"github.com/kenmobility/github-api/src/api/models"
 	"github.com/kenmobility/github-api/src/api/repos"
+	"github.com/kenmobility/github-api/src/common/message"
 )
 
 type RepositoryController interface {
 	AddRepository(ctx context.Context, data dtos.AddRepositoryRequestDto) (*models.Repository, error)
 	TrackRepository(ctx context.Context, data dtos.TrackRepositoryRequestDto) (*models.Repository, error)
-	GetRepositoryById(ctx context.Context, id string) (models.Repository, error)
+	GetRepositoryById(ctx context.Context, id string) (*models.Repository, error)
 	GetAllRepositories(ctx context.Context) ([]models.Repository, error)
 }
 
 type repositoryController struct {
 	repositoryRepo repos.RepositoryRepo
+	config         *config.Config
 }
 
-func NewRepositoryController(repositoryRepo repos.RepositoryRepo) *RepositoryController {
+func NewRepositoryController(repositoryRepo repos.RepositoryRepo, config *config.Config) *RepositoryController {
 	repoController := repositoryController{
 		repositoryRepo: repositoryRepo,
+		config:         config,
 	}
 
 	rc := RepositoryController(&repoController)
@@ -52,7 +56,12 @@ func (r *repositoryController) AddRepository(ctx context.Context, data dtos.AddR
 
 func (r *repositoryController) TrackRepository(ctx context.Context, data dtos.TrackRepositoryRequestDto) (*models.Repository, error) {
 	repo, err := r.repositoryRepo.GetRepositoryByPublicId(ctx, data.RepoPublicId)
-	if err != nil {
+
+	if err != nil && err == message.ErrNoRecordFound {
+		return nil, message.ErrRepositoryNotFound
+	}
+
+	if err != nil && err != message.ErrNoRecordFound {
 		return nil, err
 	}
 
@@ -64,7 +73,7 @@ func (r *repositoryController) TrackRepository(ctx context.Context, data dtos.Tr
 			log.Fatalf("Invalid start date format: %v", err)
 		}
 	} else {
-		startDate = time.Now().AddDate(0, -1, 0)
+		startDate = r.config.DefaultStartDate
 	}
 
 	if data.EndDate != "" {
@@ -72,17 +81,29 @@ func (r *repositoryController) TrackRepository(ctx context.Context, data dtos.Tr
 		if err != nil {
 			log.Fatalf("Invalid end date format: %v", err)
 		}
+	} else {
+		endDate = r.config.DefaultEndDate
 	}
 
 	repo.IsTracking = true
 	repo.StartDate = startDate
 	repo.EndDate = endDate
 
-	return r.repositoryRepo.SetRepositoryToTrack(ctx, repo)
+	return r.repositoryRepo.SetRepositoryToTrack(ctx, *repo)
 }
 
-func (r *repositoryController) GetRepositoryById(ctx context.Context, id string) (models.Repository, error) {
-	return r.repositoryRepo.GetRepositoryByPublicId(ctx, id)
+func (r *repositoryController) GetRepositoryById(ctx context.Context, id string) (*models.Repository, error) {
+	repo, err := r.repositoryRepo.GetRepositoryByPublicId(ctx, id)
+
+	if err != nil && err == message.ErrNoRecordFound {
+		return nil, message.ErrRepositoryNotFound
+	}
+
+	if err != nil && err != message.ErrNoRecordFound {
+		return nil, err
+	}
+
+	return repo, err
 }
 
 func (r *repositoryController) GetAllRepositories(ctx context.Context) ([]models.Repository, error) {

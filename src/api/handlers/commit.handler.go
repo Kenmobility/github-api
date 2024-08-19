@@ -25,7 +25,7 @@ func (h *Handler) GetCommitsByRepositoryId(ctx *gin.Context) {
 		return
 	}
 
-	commits, err := h.commitController.GetAllCommitsByRepository(ctx, repo, query)
+	commits, err := h.commitController.GetAllCommitsByRepository(ctx, *repo, query)
 	if err != nil {
 		response.Failure(ctx, http.StatusInternalServerError, "error fetching commits", err)
 		return

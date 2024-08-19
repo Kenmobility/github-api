@@ -25,14 +25,10 @@ const (
 
 // Client is an enhanced http.Client.
 // Can be plugged in cache, etc
-type RestClient struct {
-	BaseURL string
-}
+type RestClient struct{}
 
-func NewRestClient(baseURL string) *RestClient {
-	return &RestClient{
-		BaseURL: baseURL,
-	}
+func NewRestClient() *RestClient {
+	return &RestClient{}
 }
 
 // Request holds the request to an API Call.
@@ -106,7 +102,7 @@ func (r *RestClient) Get(path string, args ...any) (*Response, error) {
 
 	request := Request{
 		Method:      Get,
-		BaseURL:     r.BaseURL + path,
+		BaseURL:     path,
 		Headers:     headers,
 		QueryParams: queryParams,
 	}
@@ -153,7 +149,7 @@ func BuildResponse(res *http.Response) (*Response, error) {
 		Body:       string(body),
 		Headers:    res.Header,
 	}
-	res.Body.Close() // nolint
+	res.Body.Close()
 	return &response, err
 }
 

@@ -49,7 +49,6 @@ func (s *GitHubService) run() {
 }
 
 func (s *GitHubService) StartTracking() {
-	fmt.Println("set interval: ", s.config.FetchInterval)
 	go func() {
 		for {
 			s.run()
@@ -59,16 +58,9 @@ func (s *GitHubService) StartTracking() {
 }
 
 func (s *GitHubService) fetchAndSaveCommits(ctx context.Context, repo models.Repository) {
-	commits, err := s.api.FetchCommits(repo.Owner, repo.Name, repo.StartDate, repo.EndDate)
+	_, err := s.api.FetchAndSaveCommits(ctx, repo, repo.StartDate, repo.EndDate)
 	if err != nil {
 		log.Printf("Error fetching commits for repository %s: %v", repo.Name, err)
 		return
-	}
-
-	for _, commit := range commits {
-		commit.RepositoryID = repo.ID
-		if err := s.commitRepo.SaveCommit(ctx, commit); err != nil {
-			log.Printf("Error saving commit: %v", err)
-		}
 	}
 }

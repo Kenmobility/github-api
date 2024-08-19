@@ -37,7 +37,7 @@ func (h *Handler) TrackRepository(ctx *gin.Context) {
 
 	repo, err := h.repositoryController.TrackRepository(ctx, input)
 	if err != nil {
-		response.Failure(ctx, http.StatusInternalServerError, err.Error(), err)
+		response.Failure(ctx, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -52,4 +52,21 @@ func (h *Handler) FetchAllRepositories(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, http.StatusOK, "successfully fetched all repos", repos)
+}
+
+func (h *Handler) FetchRepository(ctx *gin.Context) {
+	repositoryId := ctx.Query("repoId")
+
+	if repositoryId == "" {
+		response.Failure(ctx, http.StatusBadRequest, "repoId is required", nil)
+		return
+	}
+
+	repo, err := h.repositoryController.GetRepositoryById(ctx, repositoryId)
+	if err != nil {
+		response.Failure(ctx, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "successfully fetched repository", repo)
 }

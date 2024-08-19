@@ -45,8 +45,9 @@ func (c *Commit) GetAllCommitsByRepository(ctx context.Context, repo models.Repo
 
 	queryInfo, offset := getPaginationInfo(query)
 
-	//err := c.db.Db.WithContext(ctx).Joins("Repository").Where("repositories.name = ?", repoName).Find(&commits).Error
-	db := c.db.Db.WithContext(ctx).Where(&models.Commit{RepositoryID: repo.ID})
+	//db := c.db.Db.WithContext(ctx).Joins("Repository").Where("repositories.id = ?", repo.ID) //.Find(&commits).Error
+	db := c.db.Db.WithContext(ctx).Model(&models.Commit{}).Where(&models.Commit{RepositoryID: repo.ID}).
+		Preload("Repository")
 
 	db.Count(&count)
 
